@@ -1,0 +1,9 @@
+name: covid-risk-budget
+
+dependencies:
+  - python=3.10
+  - numpy
+  - matplotlib
+  - pandas
+  - seaborn
+  - jupyterlab
