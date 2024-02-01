@@ -124,6 +124,66 @@ def average_event_risk_tolerance(
     return 1 - (1 - risk_budget) ** (1 / number_of_events)
 
 
+def compute_event_risk(
+    steady_state_co2_ppm,
+    occupancy=None,
+    specific_occupancy_proba_infectious=None,
+    wastewater_args=None,
+    infector_activity="Resting – Speaking",
+    co2_activity="Sitting reading, writing, typing"
+):
+    """
+    Parameters:
+        steady_state_co2_ppm: int
+            The CO2 reading in the room, when occupancy is constant and the CO2 readings have stabilized.
+            Note: When a room is tiny, it's faster to reach steady state. If a room is large, it takes longer
+            to reach steady state.
+
+        occupancy: None or int. Defaults to None.
+            The number of people in the room.
+
+            If None, it is assumed that specific_occupancy_proba_infectious is a list of floats representing
+            probabilities for each individual in the room (i.e. Advanced calculations where one estimates
+            the risk of each individual separately)
+
+        specific_occupancy_proba_infectious: None or List[float]. Defaults to None.
+            The probabilities for each individual in the room, i.e. Advanced calculations where one estimates
+            the risk of each individual separately. This is useful for when you have extra knowledge about
+            the individuals attending, such as what activities they've done recently in the last 10 days.
+
+            If None, it's assumed that each individual in the room has the same risk of being infectious, as
+            estimated by wastewater levels.
+
+        wastewater_args: None or dict. Defaults to None.
+            See wastewater_to_proba_infectious for details.
+
+            If None, it's assumed that specific_occupancy_proba_infectious is a list[float].
+            Otherwise, it's assumed that specific_occupancy_proba_infectious is None.
+
+        infector_activity: str. Defaults to "Resting – Speaking"
+            In terms of risk, silent is better than talking, which is better than talking loudly.
+
+        co2_activity: str.
+
+    """
+    if wastewater_args is None and specific_occupancy_proba_infectious is not None:
+        proba_infectious = specific_occupancy_proba_infectious
+        occupancy = len(specific_occupancy_proba_infectious)
+    elif wastewater_args is not None and specific_occupancy_proba_infectious is None:
+        proba_infectious = wastewater_to_proba_infectious(**wastewater_args)
+
+    return compute_risk_assuming_infector_is_present(
+        exhalation_activity_factor=INFECTOR_ACTIVITY_TO_FACTOR[infector_activity],
+        cadr_m3_per_hour=ventilation_cadr_m3_h(
+            steady_state_co2_ppm=steady_state_co2_ppm,
+            co2_generation_rate=average_m_f_co2_generation_rate(
+                activity_to_met(co2_activity),
+                occupancy=occupancy
+            )
+        )
+    ) * probability_that_someone_is_infectious_in_room(occupancy=occupancy, proba_infectious=proba_infectious)
+
+
 def compute_risk_assuming_infector_is_present(
     quanta_per_hour=3.3 * 18.6,
     cadr_m3_per_hour=100,
