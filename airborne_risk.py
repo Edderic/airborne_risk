@@ -53,7 +53,8 @@ LITERS_PER_SECOND_TO_CUBIC_METERS_PER_HOUR = 3.6
 
 
 class UserError(BaseException):
-    pass
+    def __init__(self, message):
+        super().__init__(message)
 
 def activity_to_met(activity):
     activities_to_met = {
@@ -135,33 +136,39 @@ def compute_event_risk(
     """
     Parameters:
         steady_state_co2_ppm: int
-            The CO2 reading in the room, when occupancy is constant and the CO2 readings have stabilized.
-            Note: When a room is tiny, it's faster to reach steady state. If a room is large, it takes longer
-            to reach steady state.
+            The CO2 reading in the room, when occupancy is constant and the CO2
+            readings have stabilized.  Note: When a room is tiny, it's faster
+            to reach steady state. If a room is large, it takes longer to reach
+            steady state.
 
         occupancy: None or int. Defaults to None.
             The number of people in the room.
 
-            If None, it is assumed that specific_occupancy_proba_infectious is a list of floats representing
-            probabilities for each individual in the room (i.e. Advanced calculations where one estimates
-            the risk of each individual separately)
+            If None, it is assumed that specific_occupancy_proba_infectious is
+            a list of floats representing probabilities for each individual in
+            the room (i.e. Advanced calculations where one estimates the risk
+            of each individual separately)
 
         specific_occupancy_proba_infectious: None or List[float]. Defaults to None.
-            The probabilities for each individual in the room, i.e. Advanced calculations where one estimates
-            the risk of each individual separately. This is useful for when you have extra knowledge about
-            the individuals attending, such as what activities they've done recently in the last 10 days.
+            The probabilities for each individual in the room, i.e. Advanced
+            calculations where one estimates the risk of each individual
+            separately. This is useful for when you have extra knowledge about
+            the individuals attending, such as what activities they've done
+            recently in the last 10 days.
 
-            If None, it's assumed that each individual in the room has the same risk of being infectious, as
-            estimated by wastewater levels.
+            If None, it's assumed that each individual in the room has the same
+            risk of being infectious, as estimated by wastewater levels.
 
         wastewater_args: None or dict. Defaults to None.
             See wastewater_to_proba_infectious for details.
 
-            If None, it's assumed that specific_occupancy_proba_infectious is a list[float].
-            Otherwise, it's assumed that specific_occupancy_proba_infectious is None.
+            If None, it's assumed that specific_occupancy_proba_infectious is a
+            list[float].  Otherwise, it's assumed that
+            specific_occupancy_proba_infectious is None.
 
         infector_activity: str. Defaults to "Resting – Speaking"
-            In terms of risk, silent is better than talking, which is better than talking loudly.
+            In terms of risk, silent is better than talking, which is better
+            than talking loudly.
 
         co2_activity: str.
 
