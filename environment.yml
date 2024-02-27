@@ -1,4 +1,4 @@
-name: covid-risk-budget
+name: airborne-risk
 
 dependencies:
   - python=3.10
